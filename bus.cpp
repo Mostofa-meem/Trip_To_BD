@@ -20,25 +20,18 @@ class Bus
 public:
     string Name;
     string number;
-    string Route;
-    string Date;
-    string Time;
     int seat;
     void bus_info(string s,int n)
     {
         cout<<"Bus Name   : "<<Name<<endl;
         cout<<"Bus Number : "<<number<<endl;
     }
-    void get_route();
-    void get_date();
-    void get_time();
     Bus()
     {
         seat=40;
     }
 } bus_cls[20];
-
-class Passenger:public Bus
+class Passenger
 {
 public:
     int booking ;
@@ -46,27 +39,21 @@ public:
     string Name;
     string Phone_Number;
     string Destination ;
+    string Date;
+    string Time;
+    string Bus_name;
 public:
     void display()
     {
         cout<<"\n";
         cout<<"  User  Name   : "<<Name<<endl;
-        cout<<"  Phone Number : "<<Phone_Number<<endl;
         cout<<"  Travel From  : "<<Destination<<endl;
+        cout<<"  Date         : "<<Date<<endl;
+        cout<<"  Time         : "<<Time<<endl;
+        cout<<"  Bus Name     : "<<Bus_name<<endl;
         cout<<endl;
     }
 } seat[50];
-class Shedule:public Passenger
-{
-public:
-    string date;
-    string Time;
-    void Display_Shedule()
-    {
-        cout<<" Journey Time : "<<Time<<endl;
-        cout<<" Date : "<<date<<endl;
-    }
-} TIME[24];
 string Find_Route()
 {
     system("color 0B");
@@ -366,13 +353,15 @@ string Add_Time()
     gotoxy(41,6);
     int i;
     cin>>i;
+    if(i==-1)
+        return "-1";
     if(i>root.size())
         return Add_Time();
     return root[i-1];
 }
 string Select_Time( string route,string date)
 {
-    system("color 0C");
+    system("color F0");
     string DET=route+date;
     string filename=DET+".text";
     ifstream file;
@@ -387,7 +376,8 @@ string Select_Time( string route,string date)
     while(getline(file,line))
     {
         ck[line]++;
-        if(ck[line]>1)continue;
+        if(ck[line]>1)
+            continue;
         root.push_back(line);
         if(line=="\0")
             continue;
@@ -467,6 +457,7 @@ void New_Bus(string name)
     system("cls");
     Bus_book_view("","","",name);
     string route=Find_Route();
+    if(route=="-1")return;
     system("cls");
     Bus_book_view(route,"","",name);
     string date=Select_Date(route);
@@ -483,27 +474,31 @@ void New_Bus(string name)
     string time=Add_Time();
     while(time=="-1")
     {
-        system("cls");
-        Bus_book_view(route,date,"",name);
-        time=Select_Time(route,date);
+        return;
     }
     string str=route+date+".text";
     ifstream ff;
     ff.open(str.c_str());
     vector<string>tm;
     string line;
+    map<string,int>mp;
+    mp[time]++;
+    tm.push_back(time);
     while(getline(ff,line))
     {
+        mp[line]++;
+        if(mp[line]>1)
+            continue;
+
         tm.push_back(line);
     }
     ff.close();
     ofstream fle;
     fle.open(str.c_str());
-    for(int i=0;i<tm.size();i++)
+    for(int i=0; i<tm.size(); i++)
     {
         fle<<tm[i]<<endl;
     }
-    fle<<time<<endl;
     fle.close();
     system("cls");
     Bus_book_view(route,date,time,name);
@@ -564,6 +559,7 @@ void New_Bus(string name)
 }
 int Select_Bus(string s)
 {
+    system("color 0F");
     ifstream file;
     file.open(s.c_str());
     string line;
@@ -620,6 +616,7 @@ int Select_Bus(string s)
 }
 int Select_Bus(string s,string bname)
 {
+    system("color 0F");
     ifstream file;
     file.open(s.c_str());
     string line;
@@ -705,12 +702,15 @@ void Check_info(string bus_name)
         system("cls");
         Bus_book_view("","","",bus_name);
         string route=Find_Route();
+        if(route=="-1")return;
         system("cls");
         Bus_book_view(route,"","",bus_name);
         string date=Select_Date(route);
+        if(date=="-1")return;
         system("cls");
         Bus_book_view(route,date,"",bus_name);
         string time=Select_Time(route,date);
+        if(time=="-1")return;
         string loc=route+date+time+".text";
 
         int bus_no=Select_Bus(loc,bus_name);
@@ -737,6 +737,9 @@ void Check_info(string bus_name)
         {
             if(seat[sit].booking==1)
             {
+                seat[sit].Date=date;
+                seat[sit].Time=time;
+                seat[sit].Bus_name=bus_name;
                 seat[sit].display();
             }
             else
@@ -859,7 +862,8 @@ void Seat_Booking()
     gotoxy(0,2);
 
     int bus_number=Select_Bus(route+date+time+".text");
-    if(bus_number==-1)return;
+    if(bus_number==-1)
+        return;
     Bus_book_view(route,date,time,bus_cls[bus_number].Name);
 
     string location=route+date+time+bus_cls[bus_number].Name+".text";
@@ -873,107 +877,111 @@ void Seat_Booking()
     User_Info(route,"","");
     gotoxy(16,2);
     getline(cin,name);
-    if(name=="-1")return;
+    if(name=="-1")
+        return;
     User_Info(route,name,"");
     gotoxy(16,3);
     getline(cin,phonenumber);
-    if(phonenumber=="-1")return;
+    if(phonenumber=="-1")
+        return;
     User_Info(route,name,phonenumber);
 
-
-    while(chose==1||chose==3)
+    while(1)
     {
-        system("cls");
-        Bus_Display();
-        User_Info(route,name,phonenumber);
-        if(chose==3)
+        while(chose==1||chose==3)
         {
-            cout<<"Seat Already Booked "<<endl;
-            cout<<"Do you want to continue Booking ?(y/n)"<<endl;
-            string ck;
-            cin>>ck;
-            if(ck=="n")
-                return;
-        }
-        system("cls");
-        Bus_Display();
-        User_Info(route,name,phonenumber);
-        gotoxy(0,6);
-        cout<<"Seat Number : ";
-        string s;
-        cin>>s;
-        if(s=="-1")
-            break;
-        int d=s[0]-65,e=s[1]-49;
-        int sit=d*4+e;
-        if(seat[sit].booking==0)
-        {
-            cout<<"Confirm Booking \n  1. Yes   2. No \n";
-            cin>>chose;
-            if(chose==1)
+            system("cls");
+            Bus_Display();
+            User_Info(route,name,phonenumber);
+            if(chose==3)
             {
-                seat[sit].booking=1;
-                seat[sit].Name=name;
-                seat[sit].Phone_Number=phonenumber;
-                seat[sit].Destination=route;
-                break;
+                cout<<"Seat Already Booked "<<endl;
+                cout<<"Do you want to continue Booking ?(y/n)"<<endl;
+                string ck;
+                cin>>ck;
+                if(ck=="n")
+                    return;
             }
-            else
-                return;
-        }
-        else if(seat[sit].booking==1)
-        {
-            chose=3;
-
-        }
-    }
-    ofstream myfile;
-    myfile.open(location.c_str());
-    for(int i=0; i<40; i++)
-    {
-        myfile<<seat[i].booking<<"\n";
-        myfile<<seat[i].Name<<"\n";
-        myfile<<seat[i].Phone_Number<<"\n";
-        myfile<<seat[i].Destination<<"\n";
-    }
-    myfile.close();
-
-    ifstream ff;
-    ff.open(des.c_str());
-    string line;
-    vector<string>v;
-    vector<int>sit;
-    while(getline(ff,line))
-    {
-        string nm;
-        int st=0,ck=0;
-        for(int i=0; i<line.size(); i++)
-        {
-            if(line[i]=='|')
+            system("cls");
+            Bus_Display();
+            User_Info(route,name,phonenumber);
+            gotoxy(0,6);
+            cout<<"Seat Number : ";
+            string s;
+            cin>>s;
+            if(s=="-1")
+                return ;
+            int d=s[0]-65,e=s[1]-49;
+            int sit=d*4+e;
+            if(seat[sit].booking==0)
             {
-                ck++;
-                continue;
+                cout<<"Confirm Booking \n  1. Yes   2. No \n";
+                cin>>chose;
+                if(chose==1)
+                {
+                    seat[sit].booking=1;
+                    seat[sit].Name=name;
+                    seat[sit].Phone_Number=phonenumber;
+                    seat[sit].Destination=route;
+                    break;
+                }
+                else
+                    return;
             }
-            if(ck==0)
-                nm+=line[i];
-            else
-                st=st*10+line[i]-48;
+            else if(seat[sit].booking==1)
+            {
+                chose=3;
+
+            }
         }
-        v.push_back(nm);
-        sit.push_back(st);
+        ofstream myfile;
+        myfile.open(location.c_str());
+        for(int i=0; i<40; i++)
+        {
+            myfile<<seat[i].booking<<"\n";
+            myfile<<seat[i].Name<<"\n";
+            myfile<<seat[i].Phone_Number<<"\n";
+            myfile<<seat[i].Destination<<"\n";
+        }
+        myfile.close();
+
+        ifstream ff;
+        ff.open(des.c_str());
+        string line;
+        vector<string>v;
+        vector<int>sit;
+        while(getline(ff,line))
+        {
+            string nm;
+            int st=0,ck=0;
+            for(int i=0; i<line.size(); i++)
+            {
+                if(line[i]=='|')
+                {
+                    ck++;
+                    continue;
+                }
+                if(ck==0)
+                    nm+=line[i];
+                else
+                    st=st*10+line[i]-48;
+            }
+            v.push_back(nm);
+            sit.push_back(st);
+        }
+        ff.close();
+        ofstream write;
+        write.open(des.c_str());
+        for(int i=0; i<v.size(); i++)
+        {
+            write<<v[i]<<'|';
+            if(v[i]==bus_cls[bus_number].Name)
+                write<<sit[i]-1<<endl;
+            else
+                write<<sit[i]<<endl;
+        }
+        write.close();
     }
-    ff.close();
-    ofstream write;
-    write.open(des.c_str());
-    for(int i=0; i<v.size(); i++)
-    {
-        write<<v[i]<<'|';
-        if(v[i]==bus_cls[bus_number].Name)
-            write<<sit[i]-1<<endl;
-        else
-            write<<sit[i]<<endl;
-    }
-    write.close();
 }
 void Bus_Company(int ck,string name)
 {
@@ -1054,8 +1062,6 @@ void Bus_Company(int ck,string name)
     cin>>choice;
     if(choice==1)
     {
-//        cout<<"Not Done Yet "<<endl;
-//        system("pause");
         Check_info(name);
     }
     else if(choice==2)
@@ -1116,6 +1122,129 @@ void Add_Bus_Company()
     file.close();
 
 }
+void Search()
+{
+    system("color 0F");
+    int i,j,k,l,m,n,x=35,y=12;
+    string number;
+    system("cls");
+    gotoxy(x,y++);
+    cout<<"______________________________________";
+    gotoxy(x,y++);
+    cout<<"| Mobile Number :                    |";
+    gotoxy(x,y++);
+    cout<<"|____________________________________|";
+    gotoxy(x+18,y-2);
+    cin>>number;
+    ifstream file;
+    file.open("Route.text");
+    string line;
+    string FILE;
+    while(getline(file,line))//route
+    {
+        string root=line;
+        ifstream file1;
+        FILE=line;
+        string tem=FILE+".text";
+        file1.open(tem.c_str());
+        string line1;
+        while(getline(file1,line1))//date
+        {
+            string date=line1;
+            ifstream file2;
+            FILE=line+date;
+            tem=FILE+".text";
+            file2.open(tem.c_str());
+            string line2;
+            while(getline(file2,line2))//time
+            {
+                string time=line2;
+                ifstream file3;
+                FILE=line+date+time;
+                tem=FILE+".text";
+                file3.open(tem.c_str());
+                string line3;
+                while(getline(file3,line3))
+                {
+                    string Name;
+                    for(int i=0; i<line3.size(); i++)
+                    {
+                        if(line3[i]=='|')
+                        {
+                            break;
+                        }
+                        Name+=line3[i];
+                    }
+                    cout<<Name<<endl;
+                    string loc=root+date+time+Name+".text";
+                    fileopen(loc);
+
+                    for(int i=0;i<40;i++)
+                    {
+                        if(seat[i].Phone_Number==number)
+                        {
+                            system("cls");
+
+
+                            int x=35,y=10;
+                            gotoxy(x,y++);
+                            cout<<' ';
+                            for(int j=0;j<39;j++)
+                            cout<<"_";
+
+                            gotoxy(x,y);
+                            cout<<"|  User  Name   : "<<seat[i].Name<<endl;
+                            gotoxy(x+40,y++);
+                            cout<<"|";
+
+                            gotoxy(x,y);
+                            cout<<"|  Travel From  : "<<root<<endl;
+                            gotoxy(x+40,y++);
+                            cout<<"|";
+
+                            gotoxy(x,y);
+                            cout<<"|  Date         : "<<date[0]<<date[1]<<"/"<<date[2]<<date[3]<<"/"<<date[4]<<date[5]<<date[6]<<date[7]<<endl;
+                             gotoxy(x+40,y++);
+                            cout<<"|";
+
+                            gotoxy(x,y);
+                            cout<<"|  Time         : "<<time[0]<<time[1]<<":"<<time[2]<<time[3]<<endl;
+                             gotoxy(x+40,y++);
+                            cout<<"|";
+
+                            gotoxy(x,y);
+                            cout<<"|  Bus Name     : "<<Name<<endl;
+                             gotoxy(x+40,y++);
+                            cout<<"|";
+
+                            gotoxy(x,y);
+                            cout<<"|  Seat Number  : ";
+                            char c=(i/4)+65;
+                            int m=i%4;//01625811026
+                            m++;
+                            cout<<c<<m<<endl;
+                             gotoxy(x+40,y++);
+                            cout<<"|";
+                            gotoxy(x,y++);
+
+                            cout<<"|";
+                            for(int j=0;j<39;j++)
+                            cout<<"_";
+                            cout<<"|"<<endl;
+
+                            gotoxy(x,y+=2);
+                            system("pause");
+                        }
+                    }
+                }
+
+            }
+
+        }
+    }
+
+
+}
 void Authority(int cnt)
 {
     system("color 70");
@@ -1151,17 +1280,14 @@ void Authority(int cnt)
     gotoxy(x,y++);
     cout<<"  4. Add Date\n";
     gotoxy(x,y++);
-    cout<<"  5. Add Time\n";
-    gotoxy(x,y++);
-    cout<<"  6. Back\n";
+    cout<<"  5. Back\n";
     gotoxy(x,y++);
     cout <<"Enter : ";
     string ck;
     cin>>ck;
     if(ck=="1")
     {
-        cout<<"Work Not Done Yet";
-        system("pause");
+        Search();
     }
     else if(ck=="2")
     {
@@ -1179,11 +1305,8 @@ void Authority(int cnt)
     }
     else if(ck=="5")
     {
-        cout<<"Work Not Done Yet";
-        system("pause");
-    }
-    else if(ck=="6")
         return;
+    }
 
     Authority(cnt+1);
 }
@@ -1196,7 +1319,7 @@ int main()
         gotoxy(44,4);
         cout<<" ___________________________";
         gotoxy(44,5);
-        cout<<"|***       TOURER        ***|"<<endl;
+        cout<<"|***     TRIP TO BD      ***|"<<endl;
         gotoxy(44,6);
         cout<<"|---------------------------|";
         gotoxy(44,7);
